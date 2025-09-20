@@ -1,100 +1,360 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dirty White Sh*t</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/@tonconnect/sdk@latest"></script>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: black;
-      color: white;
-    }
-    .splash {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: black;
-    }
-    .splash img {
-      width: 300px;
-    }
-    .upload-box {
-      padding: 2rem;
-    }
-    .upload-box input, .upload-box textarea {
-      display: block;
-      margin-bottom: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-    }
-    .upload-box button {
-      padding: 0.8rem;
-      background: #00ff88;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .song-list {
-      padding: 2rem;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dirty White Sh*t</title>
+
+<!-- TON / Telegram / EVM -->
+<script src="https://unpkg.com/@tonconnect/sdk@latest"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/ethers@6.13.2/dist/ethers.min.js"></script>
+
+<style>
+:root{--bg:#050907;--panel:#0b0f0d;--ink:#e7fdf2;--accent:#19ff9d;--accent2:#00b3ff}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:radial-gradient(80% 100% at 10% 10%, #06110b, #010302), url('bg.jpg');background-size:cover;color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu}
+.container{max-width:1100px;margin:0 auto;padding:18px}
+.header{display:flex;align-items:center;gap:14px;margin:16px 0 10px}
+.logo{height:58px;filter:drop-shadow(0 6px 24px #00ff9955)}
+h1{font-size:26px;margin:0;letter-spacing:.5px}
+.card{background:linear-gradient(180deg,#0e1512,#080d0b);border:1px solid #0f2018;border-radius:18px;padding:18px;box-shadow:0 10px 40px #000 inset,0 8px 30px #001f1233}
+.btn{background:var(--accent);color:#001b0a;border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;box-shadow:0 8px 26px #0aff9a55}
+.btn.secondary{background:#0e1612;border:1px solid #123a2a;color:#caffed}
+.btn.inline{padding:8px 10px;border-radius:10px;font-size:14px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.input,.select,textarea{width:100%;padding:10px 12px;border-radius:12px;background:#0b130f;border:1px solid #143b2b;color:#dffdf0;outline:none}
+label{font-size:12px;opacity:.8}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.item{background:#0a110e;border:1px solid #103726;border-radius:16px;overflow:hidden}
+.item img{width:100%;height:180px;object-fit:cover}
+.item .meta{padding:12px}
+.badge{display:inline-block;background:#07231a;color:#9afdd7;border:1px solid #0b7a53;border-radius:10px;padding:2px 8px;font-size:12px;margin-right:6px}
+.splash{position:fixed;inset:0;background:black;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:99}
+.progress{width:260px;height:8px;background:#1a1a1a;border-radius:10px;overflow:hidden;margin-top:16px}
+.progress>div{height:100%;background:var(--accent);animation:load 2.2s forwards}
+@keyframes load{from{width:0}to{width:100%}}
+.mono{font-family:ui-monospace,Consolas,monospace}
+small.muted{opacity:.72}
+footer{opacity:.7;margin-top:20px;font-size:12px;text-align:center}
+hr{border:0;border-top:1px solid #0f2a1e;margin:12px 0}
+.tabs{display:flex;gap:8px;margin-bottom:10px}
+.tab{padding:8px 10px;border-radius:10px;background:#0f1713;border:1px solid #1a3a2c;cursor:pointer}
+.tab.active{background:#123a2a;color:#caffed}
+.hidden{display:none}
+</style>
 </head>
 <body>
+<!-- Splash -->
+<div class="splash" id="splash">
+  <img src="logo-dirtywhite.png" alt="DirtyWhite" style="width:320px;height:auto">
+  <div class="progress"><div></div></div>
+</div>
 
-  <div class="splash" id="splash">
-    <img src="logo-dirtywhite.png" alt="logo"/>
-    <div class="loader" style="width: 200px; height: 8px; background: #333; margin-top: 20px;">
-      <div style="width: 100%; height: 100%; background: #00ff88; animation: load 3s;"></div>
+<!-- STORE -->
+<div class="container hidden" id="storeApp">
+  <div class="header">
+    <img class="logo" src="logo-dirtywhite.png" alt="logo">
+    <div><h1>Dirty White Sh*t — Store</h1><small class="muted">Preview 30s • Stars / TON / USDT • Instant download</small></div>
+    <span style="flex:1"></span>
+    <button class="btn inline" id="connectTon">TON</button>
+    <button class="btn inline secondary" id="connectEvm">EVM</button>
+  </div>
+  <div id="hero" class="card hidden" style="margin-bottom:14px">
+    <img id="heroImg" src="" alt="bg" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px">
+  </div>
+  <div id="grid" class="grid"></div>
+  <footer>Dirty White © All rights reserved</footer>
+</div>
+
+<!-- ADMIN -->
+<div class="container hidden" id="adminApp">
+  <div class="header">
+    <img class="logo" src="logo-dirtywhite.png" alt="logo">
+    <div><h1>Dirty White Sh*t — Admin</h1><small class="muted">Upload → Catalog su Telegram Cloud</small></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="brand">Brand & Settings</div>
+    <div class="tab" data-tab="track">Nuova Traccia</div>
+    <div class="tab" data-tab="link">Link Pubblico</div>
+  </div>
+
+  <!-- BRAND -->
+  <div class="card" id="tab-brand">
+    <div class="row">
+      <div><label>Background</label><input class="input" type="file" id="bg"/></div>
+      <div><label>Immagine Titolo (Hero)</label><input class="input" type="file" id="hero"/></div>
+    </div>
+    <div class="row">
+      <div><label>Logo</label><input class="input" type="file" id="logo"/></div>
+      <div><label>Public chat_id (default: tuo user id Telegram)</label><input class="input mono" id="chatid" placeholder="-100123... o user id"/></div>
+    </div>
+    <div class="row">
+      <div><label>EVM recipient ETH</label><input class="input mono" id="evm1" placeholder="0x..."/></div>
+      <div><label>EVM recipient Polygon</label><input class="input mono" id="evm137" placeholder="0x..."/></div>
+    </div>
+    <div class="row">
+      <div><label>EVM recipient BSC</label><input class="input mono" id="evm56" placeholder="0x..."/></div>
+      <div style="display:flex;align-items:end;gap:12px"><button class="btn" id="saveCfg">Salva Settings</button><small class="muted">Vengono salvati nel catalogo JSON pinnato.</small></div>
     </div>
   </div>
 
-  <div class="upload-box" style="display:none;" id="app">
-    <h2>Upload Track</h2>
-    <input type="file" id="mp3" accept="audio/mp3"/>
-    <input type="file" id="cover" accept="image/*"/>
-    <textarea id="desc" placeholder="Descrizione..."></textarea>
-    <input type="number" id="price" placeholder="Prezzo in STARS"/>
-    <button onclick="mint()">Carica & Vendi</button>
-    <div id="walletStatus" style="margin-top:20px;"></div>
+  <!-- TRACK -->
+  <div class="card hidden" id="tab-track">
+    <h2 style="margin:0 0 10px">Nuova Traccia</h2>
+    <div class="row">
+      <div><label>Titolo</label><input class="input" id="title"/></div>
+      <div><label>Descrizione</label><input class="input" id="desc"/></div>
+    </div>
+    <div class="row">
+      <div><label>Copertina</label><input class="input" type="file" id="cover" accept="image/*"/></div>
+      <div><label>MP3</label><input class="input" type="file" id="mp3" accept="audio/mp3,audio/mpeg"/></div>
+    </div>
+    <div class="row">
+      <div><label>Prezzo Stars (equiv. USD)</label><input class="input" type="number" id="pStars" value="3"/></div>
+      <div><label>Prezzo USDT / USD</label><input class="input" type="number" id="pUsdt" value="3"/></div>
+    </div>
+    <button class="btn" id="publish">Carica & Pubblica</button>
   </div>
 
-  <div class="song-list" id="songList"></div>
+  <!-- LINK -->
+  <div class="card hidden" id="tab-link">
+    <div>Link pubblico:</div>
+    <input class="input mono" id="plink" readonly/>
+    <button class="btn inline" id="copy">Copia</button>
+  </div>
+</div>
 
-  <script>
-    // Splash timeout
-    setTimeout(() => {
-      document.getElementById("splash").style.display = "none";
-      document.getElementById("app").style.display = "block";
-    }, 3000);
+<script>
+/* ===== CONFIG (offuscata) ===== */
+function _t(){ // token obfuscation (semplice, non perfetta)
+  const p = ["84729884","07:AAFjeet3tTQ9tSN4gO4RjENTKPN1TwSk","72A"];
+  return p.join("");
+}
+const TON_DEST = (()=>{ const h="UQArbhbVEIkN4xSWis30yIrNGdmOTBbiMBduGeNTErPbviyR"; return h; })();
 
-    // TonConnect setup
-    const connector = new TON_CONNECT.TonConnect();
-    connector.restoreConnection();
+const USDT = { 1:"0xdAC17F958D2ee523a2206206994597C13D831ec7", 137:"0xc2132D05D31c914a87C6611C10748aeb04B58e8F", 56:"0x55d398326f99059fF775485246999027B3197955" };
+let RECIPIENT_EVM = { 1:null, 137:null, 56:null };
 
-    async function mint() {
-      const price = document.getElementById('price').value;
-      if (!connector.connected) {
-        await connector.connectWallet();
-      }
-      const tx = {
-        validUntil: Math.floor(Date.now() / 1000) + 360,
-        messages: [{
-          address: "UQArbhbVEIkN4xSWis30yIrNGdmOTBbiMBduGeNTErPbviyR", // tuo wallet
-          amount: (price * 1e9).toString(),
-        }]
-      };
-      try {
-        await connector.sendTransaction(tx);
-        alert("Pagamento ricevuto. Carica il file nel bot!");
-      } catch (e) {
-        alert("Transazione annullata.");
-      }
+/* ===== UTIL ===== */
+const qs = id => document.getElementById(id);
+const WEBAPP = window.Telegram && Telegram.WebApp ? Telegram.WebApp : null;
+if (WEBAPP) WEBAPP.expand();
+function show(id){ qs(id).classList.remove("hidden"); } function hide(id){ qs(id).classList.add("hidden"); }
+function fd(){ return new FormData(); }
+async function bot(method, formData){
+  const r = await fetch(`https://api.telegram.org/bot${_t()}/${method}`, { method:"POST", body:formData });
+  const j = await r.json(); if(!j.ok) throw new Error(method+" failed "+JSON.stringify(j)); return j.result;
+}
+function userId(){ return WEBAPP && WEBAPP.initDataUnsafe && WEBAPP.initDataUnsafe.user ? WEBAPP.initDataUnsafe.user.id : null; }
+function unlock(i){ const a = qs("dl"+i); if(a) a.style.display="inline-block"; }
+
+/* ===== ROUTER ===== */
+const urlp = new URLSearchParams(location.search);
+const MODE_ADMIN = urlp.get("admin")==="1";
+const CATALOG_CHAT_ID_QUERY = urlp.get("chat_id");
+
+/* Splash */
+setTimeout(()=>{ qs('splash').style.display='none'; if(MODE_ADMIN){show('adminApp')}else{show('storeApp')} }, 1000);
+
+/* Tabs */
+document.querySelectorAll('.tab').forEach(t => t.onclick = ()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  ['brand','track','link'].forEach(id=>{
+    const el = qs('tab-'+id);
+    if(t.dataset.tab===id) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+});
+
+/* ======= STORE ======= */
+async function getCatalog(chat_id){
+  const f = fd(); f.append("chat_id", chat_id);
+  const chat = await bot("getChat", f);
+  if(!chat.pinned_message || !chat.pinned_message.document) throw new Error("Catalog non trovato. Pubblica prima dall'admin.");
+  const g = fd(); g.append("file_id", chat.pinned_message.document.file_id);
+  const file = await bot("getFile", g);
+  const url  = `https://api.telegram.org/file/bot${_t()}/` + file.file_path;
+  return await (await fetch(url)).json();
+}
+
+function renderCatalog(c){
+  RECIPIENT_EVM = c.recipients || RECIPIENT_EVM;
+  if (c.hero){ qs("hero").classList.remove("hidden"); qs("heroImg").src = c.hero; }
+  if (c.bg)  { document.body.style.backgroundImage = `url('${c.bg}')`; }
+  if (c.logo){ document.querySelectorAll(".logo").forEach(img=> img.src = c.logo); }
+
+  const grid = qs("grid"); grid.innerHTML = "";
+  (c.tracks || []).forEach((t,i)=>{
+    const card = document.createElement("div"); card.className="item";
+    const cover= document.createElement("img"); cover.src = t.cover_url;
+    const meta = document.createElement("div"); meta.className="meta";
+    const title= document.createElement("div"); title.innerHTML = `<strong>${t.title}</strong>`;
+    const desc = document.createElement("div"); desc.innerText = t.description||"";
+    const prices=document.createElement("div"); prices.innerHTML = `<span class="badge">Stars: $${t.prices.stars}</span><span class="badge">USDT: $${t.prices.usdt}</span><span class="badge">USD: $${t.prices.usd}</span>`;
+    const audio= document.createElement("audio"); audio.controls=true; audio.src = t.file_url;
+    audio.addEventListener("timeupdate",()=>{ if(!audio.dataset.unlocked && audio.currentTime>30){ audio.pause(); audio.currentTime=0; alert("Preview 30s. Compra per sbloccare."); }});
+    const row  = document.createElement("div"); row.style.marginTop="8px";
+    const b1   = document.createElement("button"); b1.className="btn inline"; b1.innerText="Buy Stars"; b1.onclick=()=>payStars(t,i);
+    const b2   = document.createElement("button"); b2.className="btn inline secondary"; b2.innerText="Buy TON";   b2.onclick=()=>payTon(t,i);
+    const b3   = document.createElement("button"); b3.className="btn inline secondary"; b3.innerText="Buy USDT";  b3.onclick=()=>payUSDT(t,i);
+    const dl   = document.createElement("a"); dl.className="btn inline"; dl.style.display="none"; dl.id="dl"+i; dl.innerText="Download"; dl.href=t.file_url; dl.download=(t.title||"track")+".mp3";
+    row.append(b1,b2,b3,dl); meta.append(title,prices,desc,audio,row); card.append(cover,meta); grid.append(card);
+  });
+}
+
+/* TON / Stars / USDT */
+const tonConnector = new TON_CONNECT.TonConnect();
+qs("connectTon").onclick = ()=> tonConnector.connectWallet();
+
+let evmProvider=null, evmSigner=null, evmChain=null;
+qs("connectEvm").onclick = async ()=>{
+  if(window.ethereum){
+    await window.ethereum.request({method:'eth_requestAccounts'});
+    evmProvider = new ethers.BrowserProvider(window.ethereum);
+    evmSigner   = await evmProvider.getSigner();
+    evmChain    = (await evmProvider.getNetwork()).chainId;
+    alert("EVM connesso: chainId "+evmChain);
+  } else { alert("Nessun wallet EVM."); }
+};
+
+async function payTon(t,i){
+  if(!tonConnector.connected) await tonConnector.connectWallet();
+  const amountNano = BigInt(Math.round((t.prices.ton || t.prices.usdt) * 1e9));
+  const tx = { validUntil: Math.floor(Date.now()/1000)+360, messages:[{address: TON_DEST, amount: amountNano.toString()}] };
+  await tonConnector.sendTransaction(tx);
+  alert("TON inviato. Download sbloccato."); unlock(i);
+}
+
+async function payUSDT(t,i){
+  if(!evmSigner){ alert("Connetti un wallet EVM."); return; }
+  const chainId = Number(evmChain); const token = USDT[chainId]; const to = (RECIPIENT_EVM && RECIPIENT_EVM[chainId]) || null;
+  if(!token || !to){ alert("USDT non configurato per questa chain."); return; }
+  const abi = ["function transfer(address to,uint value) returns (bool)","function decimals() view returns(uint8)"];
+  const c = new ethers.Contract(token, abi, evmSigner); const dec = await c.decimals();
+  const amount = BigInt(Math.round((t.prices.usdt||0) * (10 ** Number(dec))));
+  const tx = await c.transfer(to, amount); await tx.wait();
+  alert("Pagamento USDT confermato."); unlock(i);
+}
+
+async function payStars(t,i){
+  if(!(window.Telegram && Telegram.WebApp)){ alert("Apri in Telegram per pagare con Stars."); return; }
+  const P = new FormData();
+  P.append("title", t.title); P.append("description", t.description||""); P.append("payload","stars:"+t.id);
+  P.append("currency", "XTR"); P.append("prices", JSON.stringify([{label:"Track", amount: Math.round((t.prices.stars||0)*100)}]));
+  const resp = await fetch(`https://api.telegram.org/bot${_t()}/createInvoiceLink`, {method:"POST", body:P}).then(r=>r.json());
+  if(!resp.ok){ alert("Stars non configurate sul bot."); return; }
+  Telegram.WebApp.openInvoice(resp.result, (status)=>{ if(status==='paid'){ alert('Pagato. Download sbloccato.'); unlock(i); } });
+}
+
+/* Boot STORE */
+async function initStore(){
+  const chatId = CATALOG_CHAT_ID_QUERY || sessionStorage.getItem("chat_id");
+  if(!chatId){ alert("Aggiungi ?chat_id=XXXX al link pubblico."); return; }
+  sessionStorage.setItem("chat_id", chatId);
+  const cat = await getCatalog(chatId);
+  renderCatalog(cat);
+}
+if(!MODE_ADMIN) initStore();
+
+/* ======= ADMIN ======= */
+function activateTab(which){
+  document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.dataset.tab===which));
+  ['brand','track','link'].forEach(id => {
+    const el = qs('tab-'+id); if(!el) return;
+    if (id===which) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+}
+function fdCreate(o){ const F=new FormData(); Object.entries(o).forEach(([k,v])=>F.append(k,v)); return F; }
+
+async function uploadFile(chat_id, file){
+  const form = new FormData(); form.append("chat_id", chat_id); form.append("document", file);
+  const msg  = await bot("sendDocument", form);
+  const gf   = new FormData(); gf.append("file_id", msg.document.file_id);
+  const fileObj = await bot("getFile", gf);
+  return { file_id: msg.document.file_id, url: `https://api.telegram.org/file/bot${_t()}/` + fileObj.file_path };
+}
+
+async function getCatalogAdmin(chat_id){
+  try{
+    const f=fd(); f.append("chat_id", chat_id);
+    const chat = await bot("getChat", f);
+    if(chat.pinned_message && chat.pinned_message.document){
+      const g=fd(); g.append("file_id", chat.pinned_message.document.file_id);
+      const file=await bot("getFile", g);
+      const url = `https://api.telegram.org/file/bot${_t()}/` + file.file_path;
+      return await (await fetch(url)).json();
     }
-  </script>
+  }catch(e){ console.warn(e); }
+  return { tracks:[], recipients:{1:null,137:null,56:null} };
+}
+
+async function publishCatalog(chat_id, catalog){
+  const blob = new Blob([JSON.stringify(catalog,null,2)], {type:"application/json"});
+  const form = new FormData();
+  form.append("chat_id", chat_id);
+  form.append("document", blob, "catalog.json");
+  form.append("caption", "#CATALOG");
+  const msg = await bot("sendDocument", form);
+  const pin = new FormData(); pin.append("chat_id", chat_id); pin.append("message_id", msg.message_id); pin.append("disable_notification","true");
+  await bot("pinChatMessage", pin);
+  return msg;
+}
+
+function initAdmin(){
+  activateTab('brand');
+  const def = userId() || "";
+  qs("chatid").value = def;
+
+  (async ()=>{
+    const cat = await getCatalogAdmin(def || qs("chatid").value);
+    if(cat.recipients){
+      qs("evm1").value   = cat.recipients[1]   || "";
+      qs("evm137").value = cat.recipients[137] || "";
+      qs("evm56").value  = cat.recipients[56]  || "";
+    }
+    if(cat.bg)   document.body.style.backgroundImage = `url('${cat.bg}')`;
+    if(cat.logo) document.querySelectorAll(".logo").forEach(img=> img.src = cat.logo);
+    qs("plink").value = location.origin.replace(/\/$/,'') + location.pathname + "?chat_id=" + (qs("chatid").value || def);
+  })();
+
+  qs("saveCfg").onclick = async ()=>{
+    const chat = qs("chatid").value || userId();
+    let cat = await getCatalogAdmin(chat);
+    cat.recipients = { 1:qs("evm1").value||null, 137:qs("evm137").value||null, 56:qs("evm56").value||null };
+    const bg   = qs("bg").files[0], hero = qs("hero").files[0], logo = qs("logo").files[0];
+    if(bg)   cat.bg   = (await uploadFile(chat, bg)).url;
+    if(hero) cat.hero = (await uploadFile(chat, hero)).url;
+    if(logo) cat.logo = (await uploadFile(chat, logo)).url;
+    await publishCatalog(chat, cat);
+    alert("Settings salvati & pinnati.");
+    qs("plink").value = location.origin.replace(/\/$/,'') + location.pathname + "?chat_id=" + chat;
+  };
+
+  qs("publish").onclick = async ()=>{
+    const chat = qs("chatid").value || userId();
+    if(!chat){ alert("Apri dentro Telegram o inserisci chat_id."); return; }
+    const title = qs("title").value, desc = qs("desc").value;
+    const cover = qs("cover").files[0],  mp3 = qs("mp3").files[0];
+    const pStars= Number(qs("pStars").value||0), pUsdt= Number(qs("pUsdt").value||0);
+    if(!title||!cover||!mp3){ alert("Titolo, copertina e MP3 obbligatori."); return; }
+    const coverUp = await uploadFile(chat, cover);
+    const mp3Up   = await uploadFile(chat, mp3);
+    let cat = await getCatalogAdmin(chat);
+    cat.tracks = cat.tracks || [];
+    const id = "t"+Date.now();
+    cat.tracks.unshift({ id, title, description:desc,
+      cover_file_id:coverUp.file_id, cover_url:coverUp.url,
+      file_file_id: mp3Up.file_id,  file_url: mp3Up.url,
+      prices:{ stars:pStars, usdt:pUsdt, usd:pUsdt, ton:pUsdt } });
+    await publishCatalog(chat, cat);
+    alert("Traccia pubblicata & catalogo aggiornato.");
+    qs("plink").value = location.origin.replace(/\/$/,'') + location.pathname + "?chat_id=" + chat;
+  };
+
+  qs("copy").onclick = ()=>{ qs("plink").select(); document.execCommand('copy'); if(WEBAPP) WEBAPP.showPopup({title:"Copiato",message:"Link pubblico copiato"}); };
+}
+if(MODE_ADMIN) initAdmin();
+</script>
 </body>
 </html>

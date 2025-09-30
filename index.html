@@ -1,152 +1,223 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Dirty White Sh*t — Store</title>
-<link rel="preconnect" href="https://unpkg.com">
-<script src="https://unpkg.com/@tonconnect/ui@latest"></script>
-<script src="https://unpkg.com/ethers@6.13.2/dist/ethers.min.js"></script>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://unpkg.com; img-src 'self' data: https:; media-src 'self' data: https:; script-src 'self' https://unpkg.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://tonapi.io https://toncenter.com">
-<style>
-:root{--bg:#050907;--ink:#e7fdf2;--panel:#0b0f0d;--accent:#19ff9d}
-*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;background:radial-gradient(80% 100% at 10% 10%, #06110b, #010302),url('bg.jpg');background-size:cover;background-attachment:fixed;color:var(--ink);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto}
-.container{max-width:1100px;margin:0 auto;padding:18px}
-.header{display:flex;align-items:center;gap:14px;margin:16px 0 10px;flex-wrap:wrap}
-.logo{height:58px;filter:drop-shadow(0 6px 24px #00ff9955)}
-h1{margin:0;font-size:28px}
-.card{background:linear-gradient(180deg,#0e1512,#080d0b);border:1px solid #0f2018;border-radius:18px;padding:18px;box-shadow:0 10px 40px #000 inset,0 8px 30px #001f1233}
-.btn{background:var(--accent);color:#001b0a;border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
-.btn.secondary{background:#0e1612;border:1px solid #123a2a;color:#caffed}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.item{background:#0a110e;border:1px solid #103726;border-radius:16px;overflow:hidden}
-.item img{width:100%;height:180px;object-fit:cover}
-.item .meta{padding:12px}
-.badge{display:inline-block;background:#07231a;color:#9afdd7;border:1px solid #0b7a53;border-radius:10px;padding:2px 8px;font-size:12px;margin-right:6px}
-.hidden{display:none}
-small.muted{opacity:.72}
-.status{margin-top:8px;font-size:13px}
-footer{opacity:.7;margin-top:18px;font-size:12px;text-align:center}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Music Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Stili per un'interfaccia pulita e moderna, adattata al tema di Telegram */
+        :root {
+            --tg-theme-bg-color: var(--tg-theme-bg-color, #ffffff);
+            --tg-theme-text-color: var(--tg-theme-text-color, #000000);
+            --tg-theme-hint-color: var(--tg-theme-hint-color, #999999);
+            --tg-theme-link-color: var(--tg-theme-link-color, #2481cc);
+            --tg-theme-button-color: var(--tg-theme-button-color, #2481cc);
+            --tg-theme-button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --tg-theme-secondary-bg-color: var(--tg-theme-secondary-bg-color, #f1f1f1);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            padding: 15px;
+            margin: 0;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1, h2 { color: var(--tg-theme-text-color); border-bottom: 1px solid var(--tg-theme-secondary-bg-color); padding-bottom: 10px; margin-bottom: 15px; }
+        .track-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .track-title { font-size: 18px; font-weight: bold; }
+        .track-desc { font-size: 14px; color: var(--tg-theme-hint-color); margin: 5px 0 15px; }
+        .buy-button {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .buy-button:active { transform: scale(0.98); }
+        #trackList:empty::after {
+            content: "Nessuna traccia disponibile. Caricane una per iniziare!";
+            display: block;
+            text-align: center;
+            padding: 40px;
+            color: var(--tg-theme-hint-color);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--tg-theme-hint-color); }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <img class="logo" src="logo-dirtywhite.png" alt="logo">
-    <div>
-      <h1 id="siteTitle">Dirty White Sh*t — Store</h1>
-      <small class="muted">Preview 30s • Stars / TON / USDT • Download via Telegram</small>
+    <div class="container">
+        <h1>🎵 Music Store</h1>
+        <div id="trackList"></div>
+
+        <div id="adminPanel" style="display: none;">
+            <h2>🚀 Area Admin</h2>
+            <div class="track-card">
+                <h3>Aggiungi Nuova Traccia</h3>
+                <div class="form-group">
+                    <label for="trackTitle">Titolo</label>
+                    <input type="text" id="trackTitle" placeholder="Es. My Awesome Song">
+                </div>
+                <div class="form-group">
+                    <label for="trackDesc">Descrizione</label>
+                    <input type="text" id="trackDesc" placeholder="Breve descrizione del brano">
+                </div>
+                <div class="form-group">
+                    <label for="trackPrice">Prezzo in Telegram Stars (min. 1)</label>
+                    <input type="number" id="trackPrice" placeholder="Es. 5" min="1">
+                </div>
+                <button id="saveTrackButton" class="buy-button">Salva Traccia</button>
+            </div>
+        </div>
     </div>
-    <span style="flex:1"></span>
-    <button class="btn" id="connect">CONNECT WALLETS</button>
-  </div>
 
-  <div id="heroWrap" class="card hidden" style="margin-bottom:14px">
-    <img id="heroImg" src="" alt="hero" style="width:100%;max-height:260px;object-fit:cover;border-radius:12px">
-  </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        const ADMIN_IDS = [123456789]; // <-- IMPORTANTE: Inserisci qui il tuo ID utente Telegram
 
-  <div id="grid" class="grid"></div>
-  <div class="card hidden" id="msg"></div>
+        // Inizializza la Web App
+        tg.ready();
+        tg.expand();
 
-  <footer>Dirty White © All rights reserved</footer>
-</div>
+        const trackList = document.getElementById('trackList');
+        const adminPanel = document.getElementById('adminPanel');
+        const trackTitleInput = document.getElementById('trackTitle');
+        const trackDescInput = document.getElementById('trackDesc');
+        const trackPriceInput = document.getElementById('trackPrice');
+        const saveTrackButton = document.getElementById('saveTrackButton');
 
-<script>
-const CATALOG_URL='public-catalog.json';
-const tonUI = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'tonconnect-manifest.json' });
-let evmProvider=null, evmSigner=null, evmChain=null;
+        // Funzione per mostrare una notifica
+        function showNotification(message) {
+            tg.showPopup({ title: 'Notifica', message: message });
+        }
 
-const qs=id=>document.getElementById(id);
-const show=el=>el.classList.remove('hidden');
-function txt(t){const s=document.createElement('span'); s.textContent=String(t||''); return s;}
+        // Funzione per renderizzare le tracce
+        function renderTracks(tracks) {
+            trackList.innerHTML = '';
+            tracks.forEach(track => {
+                const card = document.createElement('div');
+                card.className = 'track-card';
+                card.innerHTML = `
+                    <div class="track-title">${track.title}</div>
+                    <div class="track-desc">${track.description}</div>
+                    <button class="buy-button" data-track-id="${track.id}" data-price="${track.price}">
+                        Acquista per ${track.price} ⭐
+                    </button>
+                `;
+                trackList.appendChild(card);
+            });
+        }
 
-qs('connect').onclick=async()=>{
-  try{ if(window.ethereum){ await window.ethereum.request({method:'eth_requestAccounts'}); evmProvider=new ethers.BrowserProvider(window.ethereum); evmSigner=await evmProvider.getSigner(); evmChain=(await evmProvider.getNetwork()).chainId; } }catch{}
-  try{ if(!tonUI.connected){ await tonUI.connectWallet(); } }catch{}
-  alert('Wallet collegati.');
-};
+        // Carica le tracce dal Cloud Storage
+        async function loadTracks() {
+            try {
+                const keys = await new Promise((resolve, reject) => {
+                    tg.CloudStorage.getKeys((err, res) => err ? reject(err) : resolve(res || []));
+                });
+                
+                const trackKeys = keys.filter(k => k.startsWith('track_'));
+                if (trackKeys.length === 0) {
+                    renderTracks([]);
+                    return;
+                }
 
-(async function boot(){
-  try{
-    const r=await fetch(CATALOG_URL,{cache:'no-store'}); if(!r.ok) throw new Error('Catalogo non trovato');
-    const cat=await r.json();
-    if(cat.brand?.title) qs('siteTitle').textContent=cat.brand.title;
-    if(cat.brand?.hero_url){ show(qs('heroWrap')); qs('heroImg').src=cat.brand.hero_url; }
-    render(cat);
-  }catch(e){ const m=qs('msg'); show(m); m.textContent='⚠️ '+(e.message||'Errore catalogo'); }
-})();
+                const tracksData = await new Promise((resolve, reject) => {
+                    tg.CloudStorage.getItems(trackKeys, (err, res) => err ? reject(err) : resolve(res));
+                });
 
-function render(cat){
-  const grid=qs('grid'); grid.innerHTML='';
-  if(!Array.isArray(cat.tracks)||!cat.tracks.length){ const m=qs('msg'); show(m); m.textContent='⚠️ Nessuna traccia'; return; }
+                const tracks = Object.values(tracksData).map(JSON.parse);
+                renderTracks(tracks);
+            } catch (error) {
+                showNotification(`Errore nel caricamento delle tracce: ${error}`);
+            }
+        }
 
-  cat.tracks.forEach((t,i)=>{
-    const card=document.createElement('div'); card.className='item';
-    const img=document.createElement('img'); img.src=t.cover_url; img.alt='cover';
-    const meta=document.createElement('div'); meta.className='meta';
-    const title=document.createElement('div'); const strong=document.createElement('strong'); strong.textContent=String(t.title||''); title.appendChild(strong);
-    const prices=document.createElement('div');
-    ['Stars: '+(t.prices?.stars||0),'USDT: $'+(t.prices?.usdt||0),'TON: '+(t.prices?.ton||0)].forEach(x=>{const b=document.createElement('span'); b.className='badge'; b.textContent=x; prices.append(b);});
-    const audio=document.createElement('audio'); audio.controls=true; audio.src=t.preview_url; audio.preload='metadata';
-    audio.addEventListener('timeupdate',()=>{ if(!audio.dataset.unlocked && audio.currentTime>29.8){ audio.pause(); audio.currentTime=0; alert('Preview 30s'); }});
-    const row=document.createElement('div'); row.style.marginTop='8px';
+        // Salva una nuova traccia
+        saveTrackButton.addEventListener('click', async () => {
+            const title = trackTitleInput.value.trim();
+            const description = trackDescInput.value.trim();
+            const price = parseInt(trackPriceInput.value, 10);
 
-    const stars=document.createElement('a'); stars.className='btn'; stars.textContent='Buy Stars'; stars.target='_blank';
-    stars.href=t.stars_link; stars.onclick=()=>setTimeout(()=>unlock(i),800);
+            if (!title || !description || !price || price < 1) {
+                showNotification('Per favore, compila tutti i campi correttamente. Il prezzo deve essere almeno 1 Star.');
+                return;
+            }
 
-    const tonBtn=document.createElement('button'); tonBtn.className='btn secondary'; tonBtn.textContent='Buy TON';
-    tonBtn.onclick=()=>payTon(cat,t,i);
+            const trackId = `track_${Date.now()}`;
+            const trackData = { id: trackId, title, description, price };
 
-    const usdtBtn=document.createElement('button'); usdtBtn.className='btn secondary'; usdtBtn.textContent='Buy USDT';
-    usdtBtn.style.marginLeft='6px'; tonBtn.style.marginLeft='6px';
-    usdtBtn.onclick=()=>payUSDT(cat,t,i);
+            try {
+                await new Promise((resolve, reject) => {
+                    tg.CloudStorage.setItem(trackId, JSON.stringify(trackData), (err, res) => {
+                        if (err) return reject(err);
+                        showNotification('Traccia aggiunta con successo!');
+                        trackTitleInput.value = '';
+                        trackDescInput.value = '';
+                        trackPriceInput.value = '';
+                        loadTracks();
+                        resolve(res);
+                    });
+                });
+            } catch (error) {
+                showNotification(`Errore nel salvataggio: ${error}`);
+            }
+        });
 
-    const claim=document.createElement('a'); claim.className='btn'; claim.id='claim'+i; claim.style.display='none'; claim.textContent='Claim in Telegram';
-    claim.href=t.claim_link; claim.target='_blank';
+        // Gestisce il click sul pulsante di acquisto
+        trackList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('buy-button')) {
+                const button = e.target;
+                const trackId = button.dataset.trackId;
+                const price = parseInt(button.dataset.price, 10);
+                const trackTitle = button.parentElement.querySelector('.track-title').textContent;
 
-    row.append(stars,tonBtn,usdtBtn,claim);
-    meta.append(title,prices,audio,row); card.append(img,meta); grid.append(card);
-  });
-}
-function unlock(i){ const c=qs('claim'+i); if(c) c.style.display='inline-block'; }
+                tg.showInvoice(`Acquisto di ${trackTitle}`, `Paga ${price} Telegram Stars per sbloccare la traccia "${trackTitle}".`, [
+                    { label: trackTitle, amount: price }
+                ], 'XTR', `buy_${trackId}`, (status) => {
+                    if (status === 'paid') {
+                        tg.HapticFeedback.notificationOccurred('success');
+                        showNotification(`Acquisto completato! Ora puoi inviare il file all'utente.`);
+                        // Qui, come admin, ricevi la notifica e puoi inviare manualmente il file.
+                        // Per l'automazione, sarebbe necessario un piccolo script serverless (vedi punto 4).
+                    } else if (status === 'failed') {
+                        tg.HapticFeedback.notificationOccurred('error');
+                        showNotification('Pagamento fallito. Riprova.');
+                    }
+                });
+            }
+        });
 
-// TON: invio + verifica on-chain (pubblica)
-async function payTon(cat,t,i){
-  try{
-    if(!tonUI.connected) await tonUI.connectWallet();
-    const to = cat.wallets?.ton; if(!to){ alert('TON non configurato'); return; }
-    const amountNano = String(Math.round(Number(t.prices?.ton||0)*1e9));
-    const validUntil = Math.floor(Date.now()/1000)+600;
-    await tonUI.sendTransaction({ validUntil, messages:[{ address: to, amount: amountNano }] });
+        // Controlla se l'utente è un admin e mostra il pannello
+        const currentUser = tg.initDataUnsafe?.user;
+        if (currentUser && ADMIN_IDS.includes(currentUser.id)) {
+            adminPanel.style.display = 'block';
+        }
 
-    const from = tonUI.account?.address;
-    const ok = await verifyTon(from,to,BigInt(amountNano),Date.now());
-    if(ok){ alert('TON pagato ✅ — fai Claim in Telegram'); unlock(i); } else { alert('Tx TON non trovata (attendi e riprova)'); }
-  }catch(e){ alert(e?.message||e); }
-}
-async function verifyTon(fromAddr,toAddr,amountNano,startMs){
-  const until=Date.now()+120000, eq=(a,b)=>String(a).replace(/[^A-Za-z0-9:_-]/g,'')===String(b).replace(/[^A-Za-z0-9:_-]/g,'');
-  async function tryTonApi(){ try{ const r=await fetch(`https://tonapi.io/v2/address/${encodeURIComponent(fromAddr)}/transactions?limit=20`); if(!r.ok) return false; const j=await r.json(); const txs=j.transactions||j||[]; for(const tx of txs){ const outs=tx.out_msgs||tx.outMsgs||tx.messages||[]; for(const m of outs){ const d=(m.destination||m.dst||m.address||"").trim(); const v=BigInt(m.value||m.amount||m.nano||0); const ts=(tx.utime||tx.now||tx.timestamp||0)*1000; if(eq(d,toAddr)&&v===amountNano&&ts>=startMs-15000) return true; } } return false; }catch{return false} }
-  async function tryToncenter(){ try{ const r=await fetch(`https://toncenter.com/api/v2/getTransactions?address=${encodeURIComponent(fromAddr)}&limit=20`); if(!r.ok) return false; const j=await r.json(); const txs=j.result||[]; for(const tx of txs){ const outs=tx.out_msgs||[]; for(const m of outs){ const d=(m.destination||"").trim(); const v=BigInt(m.value||0); const ts=(tx.utime||0)*1000; if(eq(d,toAddr)&&v===amountNano&&ts>=startMs-15000) return true; } } return false; }catch{return false} }
-  while(Date.now()<until){ if(await tryTonApi()) return true; if(await tryToncenter()) return true; await new Promise(r=>setTimeout(r,4000)); } return false;
-}
-
-// USDT: trasferimento on-chain (il bot verificherà la tx su claim)
-async function payUSDT(cat,t,i){
-  try{
-    if(!window.ethereum) { alert('Apri con un wallet EVM'); return; }
-    await window.ethereum.request({method:'eth_requestAccounts'}); const prov=new ethers.BrowserProvider(window.ethereum); const signer=await prov.getSigner(); const chain=(await prov.getNetwork()).chainId;
-    const tokenByChain={1:'0xdAC17F9...',137:'0xc2132D0...',56:'0x55d3983...'}; const token=USDT[Number(chain)];
-    if(!token){ alert('Chain non supportata'); return; }
-    const to = cat.wallets?.evm?.[String(Number(chain))]; if(!to){ alert('Destinatario USDT non configurato'); return; }
-    const abi=["function transfer(address to,uint value) returns(bool)","function decimals() view returns(uint8)"];
-    const c=new ethers.Contract(token,abi,signer); const dec=Number(await c.decimals());
-    const amount=toUnits(t.prices?.usdt||0,dec); const tx=await c.transfer(to,amount); await tx.wait();
-    alert('USDT pagato ✅ — fai Claim in Telegram'); unlock(i);
-  }catch(e){ alert(e?.message||e); }
-}
-function toUnits(a,d){ const s=String(a||0); if(!s.includes('.')) return BigInt(s)*(10n**BigInt(d)); const [i,f]=s.split('.'); const frac=(f+'0'.repeat(d)).slice(0,d); return BigInt(i||'0')*(10n**BigInt(d))+BigInt(frac||'0'); }
-</script>
+        // Carica i dati all'avvio
+        loadTracks();
+    </script>
 </body>
 </html>

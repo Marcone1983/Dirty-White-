@@ -647,6 +647,89 @@
             }
         }
         
+        /* Enterprise Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .splash-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .splash-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .loading-bar-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #fff, #f0f0f0);
+            border-radius: 2px;
+            animation: loading 2s ease-in-out;
+            transform: translateX(-100%);
+        }
+        
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(0%); }
+        }
+        
+        .loading-text {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         /* Enterprise Print Styles */
         @media print {
             .enterprise-nav,
@@ -663,6 +746,17 @@
     </style>
 </head>
 <body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-logo">🎵</div>
+        <div class="splash-title">DIRTY WHITE</div>
+        <div class="splash-subtitle">Music Store Enterprise</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar"></div>
+        </div>
+        <div class="loading-text">Loading premium experience...</div>
+    </div>
+
     <div class="enterprise-container">
         <!-- Enterprise Header -->
         <header class="enterprise-header">
@@ -1831,9 +1925,24 @@
             });
         }
         
+        // Splash screen management
+        function hideSplashScreen() {
+            const splashScreen = document.getElementById('splash-screen');
+            if (splashScreen) {
+                splashScreen.classList.add('fade-out');
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                }, 500);
+            }
+        }
+
         // Start application when page is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            window.app = new EnterpriseMusicStore();
+            // Show splash screen for 2.5 seconds
+            setTimeout(() => {
+                hideSplashScreen();
+                window.app = new EnterpriseMusicStore();
+            }, 2500);
         });
         
         console.log('🎵 Music Store Enterprise v3.0.0 - Production Ready initialized');

@@ -690,9 +690,45 @@
 
         <!-- Store Content -->
         <div id="store-content" class="enterprise-content active">
+            <!-- Welcome Section -->
             <div class="enterprise-card">
                 <div class="enterprise-card-header">
-                    <h2 class="enterprise-card-title">🎵 Catalogo Musicale</h2>
+                    <h2 class="enterprise-card-title">🎵 DIRTY WHITE MUSIC STORE 🎵</h2>
+                </div>
+                <div class="enterprise-card-content">
+                    <p><strong>Welcome to the future of digital music!</strong></p>
+                    <p>Discover the exclusive collection of original DIRTY WHITE tracks, now available for direct purchase through Telegram. Our enterprise store offers a secure, fast, and fully automated shopping experience.</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <h3>✨ Premium Features:</h3>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>🛒 <strong>Instant Purchases</strong> - Secure payments with Telegram Stars</li>
+                            <li>📥 <strong>Immediate Delivery</strong> - Automatic download after purchase</li>
+                            <li>🔒 <strong>Enterprise Security</strong> - Protected and verified transactions</li>
+                            <li>💎 <strong>Guaranteed Quality</strong> - High-definition audio</li>
+                            <li>🆘 <strong>24/7 Support</strong> - Professional assistance always available</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin: 20px 0;">
+                        <h3>🎶 Original DIRTY WHITE Music</h3>
+                        <p>Every track is a unique sonic artwork, produced with maximum care and attention to detail. From underground creativity to digital innovation.</p>
+                    </div>
+                    
+                    <div style="margin: 20px 0;">
+                        <h3>🚀 How to Start:</h3>
+                        <p>Browse the catalog, choose your favorite tracks, and purchase in just a few taps. Everything managed in Telegram's cloud for maximum security.</p>
+                    </div>
+                    
+                    <p style="font-style: italic; text-align: center; margin-top: 20px;">
+                        <em>Powered by Enterprise Technology | Security Guaranteed | Premium Quality</em>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="enterprise-card">
+                <div class="enterprise-card-header">
+                    <h2 class="enterprise-card-title">🎵 Music Catalog</h2>
                 </div>
                 
                 <div id="tracks-loading" class="enterprise-loading">
@@ -1044,7 +1080,10 @@
                 // Check if current user is admin
                 const isAdmin = this.userId === ADMIN_ID;
                 
-                if (!isAdmin) {
+                if (isAdmin) {
+                    // Admin sees all sections
+                    console.log('Admin interface initialized - all sections available');
+                } else {
                     // Hide admin and analytics tabs for regular users
                     const adminTab = document.querySelector('[data-tab="admin"]');
                     const analyticsTab = document.querySelector('[data-tab="stats"]');
@@ -1060,8 +1099,6 @@
                     if (storeContent) storeContent.classList.add('active');
                     
                     console.log('Regular user interface initialized - admin sections hidden');
-                } else {
-                    console.log('Admin interface initialized - all sections available');
                 }
             }
             
